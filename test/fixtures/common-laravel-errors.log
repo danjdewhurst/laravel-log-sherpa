@@ -1,0 +1,4 @@
+[2026-02-23 09:00:00] local.ERROR: SQLSTATE[HY000] Connection refused route=/orders controller=OrderController@index request_id=req-a1
+#0 /app/OrderController.php(12): DB::select()
+[2026-02-23 09:01:00] local.ERROR: CSRF token mismatch
+#0 /app/Middleware.php(42): handle()

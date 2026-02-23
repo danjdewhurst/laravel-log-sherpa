@@ -1,4 +1,5 @@
 import type { LaravelErrorLog } from "../types/error";
+import { enrichLogContext } from "../utils/contextEnrichment";
 
 const HEADER_RE = /^\[(.*?)\]\s+(\w+)(?:\.(\w+))?:\s+(.*)$/;
 
@@ -11,7 +12,7 @@ export function parseLaravelLog(content: string): LaravelErrorLog[] {
   for (const line of lines) {
     const match = line.match(HEADER_RE);
     if (match) {
-      if (current) entries.push(current);
+      if (current) entries.push(enrichLogContext(current));
       const [, timestamp, environment, level, message] = match;
       current = {
         timestamp,
@@ -29,7 +30,7 @@ export function parseLaravelLog(content: string): LaravelErrorLog[] {
     current.raw += `\n${line}`;
   }
 
-  if (current) entries.push(current);
+  if (current) entries.push(enrichLogContext(current));
 
   return entries;
 }

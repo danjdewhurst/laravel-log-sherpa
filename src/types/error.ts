@@ -1,3 +1,10 @@
+export interface LaravelLogContext {
+  route?: string;
+  controller?: string;
+  job?: string;
+  requestId?: string;
+}
+
 export interface LaravelErrorLog {
   level: string;
   timestamp: string;
@@ -5,12 +12,16 @@ export interface LaravelErrorLog {
   message: string;
   stack: string[];
   raw: string;
+  fingerprint?: string;
+  context?: LaravelLogContext;
 }
 
 export interface ParsedSummary {
   total: number;
   byLevel: Record<string, number>;
   topMessages: Array<{ message: string; count: number }>;
+  topFingerprints: Array<{ fingerprint: string; count: number }>;
+  patternHits: Record<string, number>;
 }
 
 export interface Formatter {
