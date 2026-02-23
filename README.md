@@ -41,6 +41,18 @@ bun run src/index.ts /path/to/storage/logs/laravel.log --tui
 - [x] Add date-range filtering
 - [x] Built-in noise suppression plugin
 - [x] TUI mode for interactive triage
+- [ ] Smart grouping/fingerprinting for duplicate stack traces
+- [ ] Diff mode (`--compare old.log new.log`) for new vs resolved errors
+- [ ] CI policy exit codes (fail on thresholds/patterns)
+- [ ] Additional output formats (Markdown, HTML, SARIF)
+- [ ] Laravel context enrichment (route/controller/job/request id)
+- [ ] Shareable pattern packs for common Laravel issues
+- [ ] Watch mode (`--tail`) with live rolling summaries
+- [ ] PII scrubber plugin
+- [ ] Baseline snapshots (`baseline create/check`) for regression detection
+- [ ] Config file support (`log-sherpa.config.ts`)
+- [ ] OpenTelemetry/Sentry export bridge
+- [ ] CLI UX polish (shell completions, richer errors, fixture packs)
 
 ## Testing
 
