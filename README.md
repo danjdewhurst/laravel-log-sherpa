@@ -100,6 +100,11 @@ export default {
 - [x] Config file support (`log-sherpa.config.ts`)
 - [x] OpenTelemetry/Sentry export bridge
 - [x] CLI UX polish (shell completions, richer errors, fixture packs)
+- [ ] Multi-file incident window mode (analyze rotated logs as one timeline)
+- [ ] Deploy-aware regression detection (`--since-deploy`)
+- [ ] Slack/Discord incident digest output formats
+- [ ] Anomaly detection for error-rate spikes in watch mode
+- [ ] Auto-remediation hints via configurable playbooks
 
 ## Testing
 
