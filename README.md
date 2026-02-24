@@ -11,6 +11,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - Parse standard Laravel log format (`[timestamp] env.LEVEL: message`)
 - Human-friendly summary output + `--json`
 - `--format table|markdown|html|sarif|slack|discord`
+- Chat-ready incident digests with configurable depth (`--digest-top`, `--digest-no-fingerprints`)
 - Date-range filtering (`--from`, `--to`)
 - Level filtering (`--include-level`, `--exclude-level`)
 - Configurable summary limits (`--top-messages`, `--top-fingerprints`, `--top-context-values`)
@@ -93,7 +94,8 @@ bun run src/index.ts /path/to/storage/logs/laravel.log --format markdown
 bun run src/index.ts /path/to/storage/logs/laravel.log --format html
 bun run src/index.ts /path/to/storage/logs/laravel.log --format sarif
 bun run src/index.ts /path/to/storage/logs/laravel.log --format slack
-bun run src/index.ts /path/to/storage/logs/laravel.log --format discord
+bun run src/index.ts /path/to/storage/logs/laravel.log --format discord --digest-top 5
+bun run src/index.ts /path/to/storage/logs/laravel.log --format slack --digest-no-fingerprints
 
 # filters/plugins
 bun run src/index.ts /path/to/storage/logs/laravel.log --from 2026-02-23T00:00:00Z --to 2026-02-23T23:59:59Z
@@ -135,6 +137,10 @@ export default {
     topMessages: 8,
     topFingerprints: 15,
     topContextValues: 6,
+  },
+  digest: {
+    top: 5,
+    includeFingerprints: true,
   },
   patternPacks: ["database"],
   ci: {

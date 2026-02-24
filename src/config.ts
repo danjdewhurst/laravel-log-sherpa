@@ -16,6 +16,10 @@ export interface SherpaConfig {
     topFingerprints?: number;
     topContextValues?: number;
   };
+  digest?: {
+    top?: number;
+    includeFingerprints?: boolean;
+  };
   ci?: {
     failOnLevel?: Record<string, number>;
     failOnPatterns?: string[];

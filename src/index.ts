@@ -56,6 +56,8 @@ interface AnalyzeOptions {
   topMessages?: string;
   topFingerprints?: string;
   topContextValues?: string;
+  digestTop?: string;
+  digestNoFingerprints?: boolean;
 }
 
 function collect(value: string, previous: string[]): string[] {
@@ -139,11 +141,21 @@ async function outputResult(
     return;
   }
   if (format === "slack") {
-    console.log(formatSlackDigest(logs, summary));
+    console.log(
+      formatSlackDigest(logs, summary, {
+        top: readLimit(options.digestTop ?? config.digest?.top, 3),
+        includeFingerprints: options.digestNoFingerprints ? false : (config.digest?.includeFingerprints ?? true),
+      }),
+    );
     return;
   }
   if (format === "discord") {
-    console.log(formatDiscordDigest(logs, summary));
+    console.log(
+      formatDiscordDigest(logs, summary, {
+        top: readLimit(options.digestTop ?? config.digest?.top, 3),
+        includeFingerprints: options.digestNoFingerprints ? false : (config.digest?.includeFingerprints ?? true),
+      }),
+    );
     return;
   }
   const baseOutput = new TableFormatter().format(logs, summary);
@@ -192,6 +204,8 @@ program
   .option("--top-messages <n>", "Limit number of top messages shown in summaries")
   .option("--top-fingerprints <n>", "Limit number of top fingerprints shown in summaries")
   .option("--top-context-values <n>", "Limit context hotspot values per category")
+  .option("--digest-top <n>", "Top message/fingerprint entries in Slack/Discord digest output")
+  .option("--digest-no-fingerprints", "Hide fingerprint section in Slack/Discord digest output")
   .option("--suppress-noise", "Apply built-in noise suppression plugin")
   .option("--scrub-pii", "Apply PII scrubber plugin")
   .option("--tui", "Interactive terminal view")
