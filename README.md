@@ -37,6 +37,37 @@ cd laravel-log-sherpa
 bun install
 ```
 
+## Install Globally
+
+Because this repo is currently private, the cleanest global install is via `bun link`:
+
+```bash
+# from the repo root
+bun install
+bun link
+
+# now available globally as:
+log-sherpa --help
+```
+
+To remove it later:
+
+```bash
+bun unlink log-sherpa
+```
+
+## Single-Binary Build (Bun)
+
+Yes — Bun can compile this CLI into a single executable:
+
+```bash
+mkdir -p dist
+bun build --compile src/index.ts --outfile dist/log-sherpa
+./dist/log-sherpa --help
+```
+
+You can then move `dist/log-sherpa` anywhere on your `PATH`.
+
 ## Usage
 
 ```bash
