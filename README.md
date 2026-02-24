@@ -13,6 +13,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - `--format table|markdown|html|sarif|slack|discord`
 - Date-range filtering (`--from`, `--to`)
 - Level filtering (`--include-level`, `--exclude-level`)
+- Configurable summary limits (`--top-messages`, `--top-fingerprints`, `--top-context-values`)
 - Built-in noise suppression (`--suppress-noise`)
 - PII scrubber plugin (`--scrub-pii`)
 - Interactive TUI mode (`--tui`)
@@ -97,6 +98,7 @@ bun run src/index.ts /path/to/storage/logs/laravel.log --format discord
 # filters/plugins
 bun run src/index.ts /path/to/storage/logs/laravel.log --from 2026-02-23T00:00:00Z --to 2026-02-23T23:59:59Z
 bun run src/index.ts /path/to/storage/logs/laravel.log --include-level error,critical --exclude-level warning
+bun run src/index.ts /path/to/storage/logs/laravel.log --top-messages 10 --top-fingerprints 20 --top-context-values 8
 bun run src/index.ts /path/to/storage/logs/laravel.log --suppress-noise --scrub-pii
 bun run src/index.ts /path/to/storage/logs/laravel.log --pattern-pack database --pattern-pack queue
 
@@ -129,6 +131,11 @@ export default {
   output: "table",
   includeLevels: ["error", "critical"],
   excludeLevels: ["warning"],
+  summary: {
+    topMessages: 8,
+    topFingerprints: 15,
+    topContextValues: 6,
+  },
   patternPacks: ["database"],
   ci: {
     failOnLevel: { error: 5 },

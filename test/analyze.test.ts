@@ -45,4 +45,19 @@ describe("summarize", () => {
     expect(summary.contextHotspots?.requestIds[0]).toEqual({ key: "req-1", count: 2 });
     expect(summary.contextHotspots?.jobs[0]).toEqual({ key: "SyncOrderJob", count: 1 });
   });
+
+  test("supports configurable summary limits", () => {
+    const logs = attachFingerprints([
+      { level: "error", timestamp: "t1", message: "A", stack: [], raw: "", context: { route: "/a" } },
+      { level: "error", timestamp: "t2", message: "A", stack: [], raw: "", context: { route: "/a" } },
+      { level: "error", timestamp: "t3", message: "B", stack: [], raw: "", context: { route: "/b" } },
+      { level: "error", timestamp: "t4", message: "C", stack: [], raw: "", context: { route: "/c" } },
+    ]);
+
+    const summary = summarize(logs, [], { topMessages: 2, topFingerprints: 1, topContextValues: 2 });
+
+    expect(summary.topMessages.map((m) => m.message)).toEqual(["A", "B"]);
+    expect(summary.topFingerprints).toHaveLength(1);
+    expect(summary.contextHotspots?.routes).toHaveLength(2);
+  });
 });

@@ -11,6 +11,11 @@ export interface SherpaConfig {
   to?: string;
   includeLevels?: string[];
   excludeLevels?: string[];
+  summary?: {
+    topMessages?: number;
+    topFingerprints?: number;
+    topContextValues?: number;
+  };
   ci?: {
     failOnLevel?: Record<string, number>;
     failOnPatterns?: string[];

@@ -53,12 +53,23 @@ interface AnalyzeOptions {
   anomalyMinDelta?: string;
   includeLevel?: string[];
   excludeLevel?: string[];
+  topMessages?: string;
+  topFingerprints?: string;
+  topContextValues?: string;
 }
 
 function collect(value: string, previous: string[]): string[] {
   return previous.concat([value]);
 }
 
+function readLimit(raw: string | number | undefined, fallback: number): number {
+  if (raw === undefined) return fallback;
+  const parsed = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error(`Expected a positive number, got: ${raw}`);
+  }
+  return Math.floor(parsed);
+}
 
 function parseAndProcessLogs(
   parsed: LaravelErrorLog[],
@@ -85,7 +96,14 @@ function parseAndProcessLogs(
   const patternNames = [...(config.patternPacks ?? []), ...(options.patternPack ?? [])];
   const patterns = resolvePatternPacks(patternNames);
 
-  return { logs: processed, summary: summarize(processed, patterns) };
+  return {
+    logs: processed,
+    summary: summarize(processed, patterns, {
+      topMessages: readLimit(options.topMessages ?? config.summary?.topMessages, 5),
+      topFingerprints: readLimit(options.topFingerprints ?? config.summary?.topFingerprints, 10),
+      topContextValues: readLimit(options.topContextValues ?? config.summary?.topContextValues, 5),
+    }),
+  };
 }
 
 async function outputResult(
@@ -171,6 +189,9 @@ program
   .option("--to <isoDate>", "Include logs up to this date/time (ISO-8601)")
   .option("--include-level <level>", "Only include these levels (repeatable or CSV)", collect, [])
   .option("--exclude-level <level>", "Exclude these levels (repeatable or CSV)", collect, [])
+  .option("--top-messages <n>", "Limit number of top messages shown in summaries")
+  .option("--top-fingerprints <n>", "Limit number of top fingerprints shown in summaries")
+  .option("--top-context-values <n>", "Limit context hotspot values per category")
   .option("--suppress-noise", "Apply built-in noise suppression plugin")
   .option("--scrub-pii", "Apply PII scrubber plugin")
   .option("--tui", "Interactive terminal view")

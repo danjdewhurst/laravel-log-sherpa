@@ -1,6 +1,12 @@
 import type { LaravelErrorLog, ParsedSummary } from "./types/error";
 import { countPatternHits } from "./patternPacks";
 
+export interface SummaryLimits {
+  topMessages?: number;
+  topFingerprints?: number;
+  topContextValues?: number;
+}
+
 function topCounts(values: Array<string | undefined>, limit: number): Array<{ key: string; count: number }> {
   const counts: Record<string, number> = {};
   for (const value of values) {
@@ -14,7 +20,14 @@ function topCounts(values: Array<string | undefined>, limit: number): Array<{ ke
     .slice(0, limit);
 }
 
-export function summarize(logs: LaravelErrorLog[], patterns: RegExp[] = []): ParsedSummary {
+export function summarize(
+  logs: LaravelErrorLog[],
+  patterns: RegExp[] = [],
+  limits: SummaryLimits = {},
+): ParsedSummary {
+  const topMessagesLimit = limits.topMessages ?? 5;
+  const topFingerprintsLimit = limits.topFingerprints ?? 10;
+  const topContextValuesLimit = limits.topContextValues ?? 5;
   const byLevel: Record<string, number> = {};
   const messageCount: Record<string, number> = {};
   const fpCount: Record<string, number> = {};
@@ -30,12 +43,12 @@ export function summarize(logs: LaravelErrorLog[], patterns: RegExp[] = []): Par
   const topMessages = Object.entries(messageCount)
     .map(([message, count]) => ({ message, count }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    .slice(0, topMessagesLimit);
 
   const topFingerprints = Object.entries(fpCount)
     .map(([fingerprint, count]) => ({ fingerprint, count }))
     .sort((a, b) => b.count - a.count)
-    .slice(0, 10);
+    .slice(0, topFingerprintsLimit);
 
   return {
     total: logs.length,
@@ -44,10 +57,10 @@ export function summarize(logs: LaravelErrorLog[], patterns: RegExp[] = []): Par
     topFingerprints,
     patternHits: countPatternHits(logs, patterns),
     contextHotspots: {
-      routes: topCounts(logs.map((l) => l.context?.route), 5),
-      controllers: topCounts(logs.map((l) => l.context?.controller), 5),
-      jobs: topCounts(logs.map((l) => l.context?.job), 5),
-      requestIds: topCounts(logs.map((l) => l.context?.requestId), 5),
+      routes: topCounts(logs.map((l) => l.context?.route), topContextValuesLimit),
+      controllers: topCounts(logs.map((l) => l.context?.controller), topContextValuesLimit),
+      jobs: topCounts(logs.map((l) => l.context?.job), topContextValuesLimit),
+      requestIds: topCounts(logs.map((l) => l.context?.requestId), topContextValuesLimit),
     },
   };
 }
