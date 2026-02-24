@@ -21,6 +21,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - Deploy-aware regression snapshots (`--since-deploy 2026-02-24T10:30:00Z`)
 - CI policy gates (`--ci`, `--fail-on-level`, `--fail-on-pattern`) with non-zero exit code
 - Context enrichment (route/controller/job/request id extraction)
+- Context hotspot ranking in summaries (top routes/controllers)
 - Auto-remediation hints with configurable playbooks
 - Pattern packs (`--pattern-pack database|auth|queue|cache`)
 - Watch mode (`--tail`, `--tail-interval`) with anomaly spike detection (`--anomaly-factor`, `--anomaly-min-delta`)

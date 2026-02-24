@@ -1,6 +1,19 @@
 import type { LaravelErrorLog, ParsedSummary } from "./types/error";
 import { countPatternHits } from "./patternPacks";
 
+function topCounts(values: Array<string | undefined>, limit: number): Array<{ key: string; count: number }> {
+  const counts: Record<string, number> = {};
+  for (const value of values) {
+    if (!value) continue;
+    counts[value] = (counts[value] ?? 0) + 1;
+  }
+
+  return Object.entries(counts)
+    .map(([key, count]) => ({ key, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
+}
+
 export function summarize(logs: LaravelErrorLog[], patterns: RegExp[] = []): ParsedSummary {
   const byLevel: Record<string, number> = {};
   const messageCount: Record<string, number> = {};
@@ -30,5 +43,11 @@ export function summarize(logs: LaravelErrorLog[], patterns: RegExp[] = []): Par
     topMessages,
     topFingerprints,
     patternHits: countPatternHits(logs, patterns),
+    contextHotspots: {
+      routes: topCounts(logs.map((l) => l.context?.route), 5),
+      controllers: topCounts(logs.map((l) => l.context?.controller), 5),
+      jobs: topCounts(logs.map((l) => l.context?.job), 5),
+      requestIds: topCounts(logs.map((l) => l.context?.requestId), 5),
+    },
   };
 }

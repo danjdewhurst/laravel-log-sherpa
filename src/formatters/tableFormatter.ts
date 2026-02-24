@@ -19,12 +19,24 @@ export class TableFormatter implements Formatter {
       .map(([pattern, count]) => `${pattern}: ${count}`)
       .join(" | ");
 
+    const routeHotspots = (summary.contextHotspots?.routes ?? [])
+      .slice(0, 3)
+      .map((item) => `${item.key}: ${item.count}`)
+      .join(" | ");
+
+    const controllerHotspots = (summary.contextHotspots?.controllers ?? [])
+      .slice(0, 3)
+      .map((item) => `${item.key}: ${item.count}`)
+      .join(" | ");
+
     return [
       "Laravel Log Sherpa Summary",
       "=".repeat(40),
       `Total errors: ${summary.total}`,
       `Levels: ${levels || "none"}`,
       `Pattern hits: ${patternHits || "none"}`,
+      `Routes: ${routeHotspots || "none"}`,
+      `Controllers: ${controllerHotspots || "none"}`,
       "",
       "Top messages:",
       top || "none",

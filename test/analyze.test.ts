@@ -12,6 +12,7 @@ describe("summarize", () => {
           message: "DB failed",
           stack: [],
           raw: "",
+          context: { route: "/orders", controller: "OrderController@index", requestId: "req-1" },
         },
         {
           level: "error",
@@ -19,6 +20,7 @@ describe("summarize", () => {
           message: "DB failed",
           stack: [],
           raw: "",
+          context: { route: "/orders", controller: "OrderController@index", requestId: "req-2" },
         },
         {
           level: "warning",
@@ -26,6 +28,7 @@ describe("summarize", () => {
           message: "Slow query",
           stack: [],
           raw: "",
+          context: { route: "/checkout", job: "SyncOrderJob", requestId: "req-1" },
         },
       ]),
     );
@@ -37,5 +40,9 @@ describe("summarize", () => {
     expect(summary.topMessages[0].count).toBe(2);
     expect(summary.topFingerprints.length).toBeGreaterThan(0);
     expect(summary.patternHits).toEqual({});
+    expect(summary.contextHotspots?.routes[0]).toEqual({ key: "/orders", count: 2 });
+    expect(summary.contextHotspots?.controllers[0]).toEqual({ key: "OrderController@index", count: 2 });
+    expect(summary.contextHotspots?.requestIds[0]).toEqual({ key: "req-1", count: 2 });
+    expect(summary.contextHotspots?.jobs[0]).toEqual({ key: "SyncOrderJob", count: 1 });
   });
 });

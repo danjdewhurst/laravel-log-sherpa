@@ -22,6 +22,12 @@ export interface ParsedSummary {
   topMessages: Array<{ message: string; count: number }>;
   topFingerprints: Array<{ fingerprint: string; count: number }>;
   patternHits: Record<string, number>;
+  contextHotspots?: {
+    routes: Array<{ key: string; count: number }>;
+    controllers: Array<{ key: string; count: number }>;
+    jobs: Array<{ key: string; count: number }>;
+    requestIds: Array<{ key: string; count: number }>;
+  };
 }
 
 export interface Formatter {

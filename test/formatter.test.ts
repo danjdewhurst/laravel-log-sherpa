@@ -3,6 +3,13 @@ import { TableFormatter } from "../src/formatters/tableFormatter";
 import { MarkdownFormatter } from "../src/formatters/markdownFormatter";
 import { HtmlFormatter } from "../src/formatters/htmlFormatter";
 
+const emptyContextHotspots = {
+  routes: [],
+  controllers: [],
+  jobs: [],
+  requestIds: [],
+};
+
 describe("formatters", () => {
   test("table formatter formats summary output", () => {
     const formatter = new TableFormatter();
@@ -14,6 +21,7 @@ describe("formatters", () => {
         topMessages: [{ message: "Boom", count: 1 }],
         topFingerprints: [{ fingerprint: "fp_1", count: 1 }],
         patternHits: {},
+        contextHotspots: emptyContextHotspots,
       },
     );
 
@@ -30,6 +38,7 @@ describe("formatters", () => {
       topMessages: [{ message: "Boom", count: 1 }],
       topFingerprints: [],
       patternHits: {},
+      contextHotspots: emptyContextHotspots,
     };
 
     expect(new MarkdownFormatter().format(logs, summary)).toContain("# Laravel Log Sherpa Summary");
@@ -44,6 +53,7 @@ describe("formatters", () => {
       topMessages: [],
       topFingerprints: [],
       patternHits: {},
+      contextHotspots: emptyContextHotspots,
     });
 
     expect(out).toContain("Total errors: 0");
