@@ -17,6 +17,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - Interactive TUI mode (`--tui`)
 - Fingerprint grouping for duplicate stack traces
 - Compare mode (`--compare old.log new.log`)
+- Deploy-aware regression snapshots (`--since-deploy 2026-02-24T10:30:00Z`)
 - CI policy gates (`--ci`, `--fail-on-level`, `--fail-on-pattern`) with non-zero exit code
 - Context enrichment (route/controller/job/request id extraction)
 - Pattern packs (`--pattern-pack database|auth|queue|cache`)
@@ -58,6 +59,9 @@ bun run src/index.ts /path/to/storage/logs/laravel.log --pattern-pack database -
 # compare + watch
 bun run src/index.ts --compare old.log new.log
 bun run src/index.ts /path/to/storage/logs/laravel.log --tail --tail-interval 1500
+
+# deploy-aware regression check
+bun run src/index.ts /path/to/storage/logs/laravel.log --since-deploy 2026-02-24T10:30:00Z
 
 # CI policy (exit code 2 on violations)
 bun run src/index.ts /path/to/storage/logs/laravel.log --ci --fail-on-level error=1 --fail-on-pattern "sqlstate"
@@ -105,7 +109,7 @@ export default {
 - [x] OpenTelemetry/Sentry export bridge
 - [x] CLI UX polish (shell completions, richer errors, fixture packs)
 - [x] Multi-file incident window mode (analyze rotated logs as one timeline)
-- [ ] Deploy-aware regression detection (`--since-deploy`)
+- [x] Deploy-aware regression detection (`--since-deploy`)
 - [ ] Slack/Discord incident digest output formats
 - [ ] Anomaly detection for error-rate spikes in watch mode
 - [ ] Auto-remediation hints via configurable playbooks

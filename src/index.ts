@@ -9,6 +9,7 @@ import { compareLogs } from "./compare";
 import { getCompletion } from "./completions";
 import { loadConfig } from "./config";
 import { exportOtel, exportSentry } from "./exporters";
+import { computeDeployRegression } from "./deployRegression";
 import { HtmlFormatter } from "./formatters/htmlFormatter";
 import { MarkdownFormatter } from "./formatters/markdownFormatter";
 import { formatSarif } from "./formatters/sarifFormatter";
@@ -45,6 +46,7 @@ interface AnalyzeOptions {
   completion?: string;
   dir?: string;
   match?: string;
+  sinceDeploy?: string;
 }
 
 function collect(value: string, previous: string[]): string[] {
@@ -95,6 +97,9 @@ async function outputResult(
   options: AnalyzeOptions,
   config: Awaited<ReturnType<typeof loadConfig>>,
 ): Promise<void> {
+  const deployRegression = options.sinceDeploy
+    ? computeDeployRegression(logs, options.sinceDeploy)
+    : undefined;
   if (options.tui) {
     await runTui(logs, summary);
     return;
@@ -102,7 +107,7 @@ async function outputResult(
 
   const format = (options.json ? "json" : options.format ?? config.output ?? "table") as string;
   if (format === "json") {
-    console.log(JSON.stringify({ logs, summary }, null, 2));
+    console.log(JSON.stringify({ logs, summary, deployRegression }, null, 2));
     return;
   }
   if (format === "markdown") {
@@ -117,7 +122,22 @@ async function outputResult(
     console.log(formatSarif(logs, summary));
     return;
   }
-  console.log(new TableFormatter().format(logs, summary));
+  const baseOutput = new TableFormatter().format(logs, summary);
+  if (!deployRegression) {
+    console.log(baseOutput);
+    return;
+  }
+
+  const regressionLines = [
+    "",
+    `Deploy regression (${deployRegression.sinceDeploy})`,
+    "-".repeat(40),
+    `Before deploy logs: ${deployRegression.beforeCount}`,
+    `After deploy logs:  ${deployRegression.afterCount}`,
+    `New fingerprints:  ${deployRegression.newFingerprints.length}`,
+    ...deployRegression.newFingerprints.map((fp) => `- ${fp.fingerprint} (${fp.count})`),
+  ];
+  console.log([baseOutput, ...regressionLines].join("\n"));
 }
 
 const program = new Command();
@@ -150,6 +170,7 @@ program
   .option("--export-sentry <file>", "Write Sentry-compatible JSON payload")
   .option("--dir <path>", "Analyze all log files in a directory")
   .option("--match <substring>", "Filename match filter for --dir mode", "laravel")
+  .option("--since-deploy <isoDate>", "Highlight fingerprints that appeared after deploy time")
   .action(async (file, options: AnalyzeOptions) => {
     try {
       if (options.completion) {
