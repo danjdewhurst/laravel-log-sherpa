@@ -38,18 +38,29 @@ export async function loadBaseline(file: string): Promise<BaselineSnapshot> {
   return (await Bun.file(file).json()) as BaselineSnapshot;
 }
 
-export function checkBaseline(
-  baseline: BaselineSnapshot,
-  current: LaravelErrorLog[],
-): BaselineCheck {
+export function checkBaseline(baseline: BaselineSnapshot, current: LaravelErrorLog[]): BaselineCheck {
   const currentMap = countByFingerprint(current);
   const newFingerprints = Object.entries(currentMap)
     .filter(([fp]) => !(fp in baseline.byFingerprint))
-    .map(([fingerprint, count]) => ({ fingerprint, count }));
+    .map(([fingerprint, count]) => ({ fingerprint, count }))
+    .sort((a, b) => b.count - a.count);
 
   const resolvedFingerprints = Object.entries(baseline.byFingerprint)
     .filter(([fp]) => !(fp in currentMap))
-    .map(([fingerprint, count]) => ({ fingerprint, count }));
+    .map(([fingerprint, count]) => ({ fingerprint, count }))
+    .sort((a, b) => b.count - a.count);
 
   return { newFingerprints, resolvedFingerprints };
+}
+
+export function formatBaselineCheckReport(result: BaselineCheck, limit = 20): string {
+  const lines = [
+    "Baseline check",
+    "-".repeat(40),
+    `New fingerprints: ${result.newFingerprints.length}`,
+    ...result.newFingerprints.slice(0, limit).map((fp) => `+ ${fp.fingerprint} (${fp.count})`),
+    `Resolved fingerprints: ${result.resolvedFingerprints.length}`,
+    ...result.resolvedFingerprints.slice(0, limit).map((fp) => `- ${fp.fingerprint} (${fp.count})`),
+  ];
+  return lines.join("\n");
 }

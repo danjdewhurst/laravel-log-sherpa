@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
 import { summarize } from "./analyze";
-import { createBaseline, checkBaseline, loadBaseline, saveBaseline } from "./baseline";
+import { createBaseline, checkBaseline, formatBaselineCheckReport, loadBaseline, saveBaseline } from "./baseline";
 import { evaluateCiPolicy, parseLevelThresholds } from "./ciPolicy";
 import { compareLogs } from "./compare";
 import { getCompletion } from "./completions";
@@ -322,12 +322,20 @@ baseline
   .command("check")
   .argument("<file>", "Path to laravel.log")
   .option("--baseline <path>", "Baseline file", ".log-sherpa-baseline.json")
+  .option("--format <format>", "Output format: json|table", "json")
+  .option("--limit <n>", "Max new/resolved fingerprint rows in table output", "20")
   .action(async (file, options) => {
     const config = await loadConfig();
     const { logs } = parseAndProcessLogs(parseLogFile(file), {}, config);
     const existing = await loadBaseline(options.baseline);
     const result = checkBaseline(existing, logs);
-    console.log(JSON.stringify(result, null, 2));
+
+    if (options.format === "table") {
+      console.log(formatBaselineCheckReport(result, readLimit(options.limit, 20)));
+    } else {
+      console.log(JSON.stringify(result, null, 2));
+    }
+
     if (result.newFingerprints.length > 0) {
       process.exitCode = 2;
     }

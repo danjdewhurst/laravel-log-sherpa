@@ -28,7 +28,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - Pattern packs (`--pattern-pack database|auth|queue|cache`)
 - Watch mode (`--tail`, `--tail-interval`) with anomaly spike detection (`--anomaly-factor`, `--anomaly-min-delta`)
 - Multi-file incident window mode (`--dir /path/to/logs --match laravel`)
-- Baselines (`baseline create`, `baseline check`)
+- Baselines (`baseline create`, `baseline check`) with optional human-readable table reports
 - Config support (`log-sherpa.config.ts|js|json`)
 - OpenTelemetry/Sentry export bridge (`--export-otel`, `--export-sentry`)
 - Shell completions (`--completion bash|zsh|fish`)
@@ -117,6 +117,7 @@ bun run src/index.ts /path/to/storage/logs/laravel.log --ci --fail-on-level erro
 # baseline snapshots
 bun run src/index.ts baseline create /path/to/storage/logs/laravel.log --out .log-sherpa-baseline.json
 bun run src/index.ts baseline check /path/to/storage/logs/laravel.log --baseline .log-sherpa-baseline.json
+bun run src/index.ts baseline check /path/to/storage/logs/laravel.log --format table --limit 10
 
 # integrations + UX
 bun run src/index.ts /path/to/storage/logs/laravel.log --export-otel otel.json --export-sentry sentry.json
