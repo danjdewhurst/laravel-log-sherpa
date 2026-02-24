@@ -130,6 +130,9 @@ bunx tsc --noEmit
 bun test --coverage
 ```
 
+Targeted tests cover roadmap features including `--dir` multi-file mode, `--since-deploy` regression checks,
+Slack/Discord digests, watch-mode anomaly detection, and remediation playbook hinting.
+
 ## License
 
 MIT

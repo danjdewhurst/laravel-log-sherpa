@@ -1,7 +1,5 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 import { summarize } from "./analyze";
 import { createBaseline, checkBaseline, loadBaseline, saveBaseline } from "./baseline";
 import { evaluateCiPolicy, parseLevelThresholds } from "./ciPolicy";
@@ -15,7 +13,7 @@ import { MarkdownFormatter } from "./formatters/markdownFormatter";
 import { formatSarif } from "./formatters/sarifFormatter";
 import { TableFormatter } from "./formatters/tableFormatter";
 import { formatDiscordDigest, formatSlackDigest } from "./formatters/chatDigestFormatter";
-import { parseLaravelLog } from "./parsers/laravelParser";
+import { parseLogDirectory, parseLogFile } from "./logSources";
 import { noiseSuppressionPlugin } from "./plugins/noiseSuppressionPlugin";
 import { piiScrubberPlugin } from "./plugins/piiScrubberPlugin";
 import { PluginManager } from "./plugins/pluginManager";
@@ -55,21 +53,6 @@ interface AnalyzeOptions {
 
 function collect(value: string, previous: string[]): string[] {
   return previous.concat([value]);
-}
-
-function parseLogFile(file: string): LaravelErrorLog[] {
-  const content = readFileSync(file, "utf8");
-  return parseLaravelLog(content);
-}
-
-function parseLogDirectory(dir: string, match = "laravel"): LaravelErrorLog[] {
-  const files = readdirSync(dir)
-    .filter((name) => name.toLowerCase().includes(match.toLowerCase()))
-    .map((name) => join(dir, name))
-    .filter((fullPath) => statSync(fullPath).isFile())
-    .sort();
-
-  return files.flatMap((file) => parseLogFile(file));
 }
 
 function parseAndProcessLogs(
