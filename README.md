@@ -39,20 +39,27 @@ bun install
 
 ## Install Globally
 
-Because this repo is currently private, the cleanest global install is via `bun link`:
+Install directly from GitHub:
 
 ```bash
-# from the repo root
-bun install
-bun link
+bun add -g github:danjdewhurst/laravel-log-sherpa
 
 # now available globally as:
 log-sherpa --help
 ```
 
+If you’re developing locally, `bun link` is also handy:
+
+```bash
+# from the repo root
+bun install
+bun link
+```
+
 To remove it later:
 
 ```bash
+bun remove -g laravel-log-sherpa
 bun unlink log-sherpa
 ```
 
