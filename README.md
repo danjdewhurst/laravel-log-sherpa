@@ -20,6 +20,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - Deploy-aware regression snapshots (`--since-deploy 2026-02-24T10:30:00Z`)
 - CI policy gates (`--ci`, `--fail-on-level`, `--fail-on-pattern`) with non-zero exit code
 - Context enrichment (route/controller/job/request id extraction)
+- Auto-remediation hints with configurable playbooks
 - Pattern packs (`--pattern-pack database|auth|queue|cache`)
 - Watch mode (`--tail`, `--tail-interval`) with anomaly spike detection (`--anomaly-factor`, `--anomaly-min-delta`)
 - Multi-file incident window mode (`--dir /path/to/logs --match laravel`)
@@ -90,6 +91,12 @@ export default {
     failOnLevel: { error: 5 },
     failOnPatterns: ["sqlstate", "out of memory"],
   },
+  remediation: {
+    playbook: [
+      { pattern: "SQLSTATE", hint: "Check DB credentials and migration drift." },
+      { pattern: "Redis", hint: "Verify Redis availability and cache/session driver config." },
+    ],
+  },
 };
 ```
 
@@ -114,7 +121,7 @@ export default {
 - [x] Deploy-aware regression detection (`--since-deploy`)
 - [x] Slack/Discord incident digest output formats
 - [x] Anomaly detection for error-rate spikes in watch mode
-- [ ] Auto-remediation hints via configurable playbooks
+- [x] Auto-remediation hints via configurable playbooks
 
 ## Testing
 

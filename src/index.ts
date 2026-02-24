@@ -25,6 +25,7 @@ import { filterByDateRange } from "./utils/dateFilter";
 import { attachFingerprints } from "./utils/fingerprint";
 import { resolvePatternPacks } from "./patternPacks";
 import { runWatch } from "./watch";
+import { buildRemediationHints } from "./remediation";
 
 interface AnalyzeOptions {
   json?: boolean;
@@ -103,6 +104,7 @@ async function outputResult(
   const deployRegression = options.sinceDeploy
     ? computeDeployRegression(logs, options.sinceDeploy)
     : undefined;
+  const remediationHints = buildRemediationHints(logs, config.remediation?.playbook ?? []);
   if (options.tui) {
     await runTui(logs, summary);
     return;
@@ -110,7 +112,7 @@ async function outputResult(
 
   const format = (options.json ? "json" : options.format ?? config.output ?? "table") as string;
   if (format === "json") {
-    console.log(JSON.stringify({ logs, summary, deployRegression }, null, 2));
+    console.log(JSON.stringify({ logs, summary, deployRegression, remediationHints }, null, 2));
     return;
   }
   if (format === "markdown") {
@@ -134,8 +136,17 @@ async function outputResult(
     return;
   }
   const baseOutput = new TableFormatter().format(logs, summary);
+  const remediationLines = [
+    "",
+    "Remediation hints",
+    "-".repeat(40),
+    ...(remediationHints.length > 0
+      ? remediationHints.map((hint) => `- ${hint.hint} [matches: ${hint.matches}]`)
+      : ["- No matched playbook hints"]),
+  ];
+
   if (!deployRegression) {
-    console.log(baseOutput);
+    console.log([baseOutput, ...remediationLines].join("\n"));
     return;
   }
 
@@ -148,7 +159,7 @@ async function outputResult(
     `New fingerprints:  ${deployRegression.newFingerprints.length}`,
     ...deployRegression.newFingerprints.map((fp) => `- ${fp.fingerprint} (${fp.count})`),
   ];
-  console.log([baseOutput, ...regressionLines].join("\n"));
+  console.log([baseOutput, ...regressionLines, ...remediationLines].join("\n"));
 }
 
 const program = new Command();

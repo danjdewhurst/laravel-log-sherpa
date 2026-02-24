@@ -6,7 +6,7 @@ export interface SherpaConfig {
   suppressNoise?: boolean;
   scrubPii?: boolean;
   patternPacks?: string[];
-  output?: "table" | "json" | "markdown" | "html" | "sarif";
+  output?: "table" | "json" | "markdown" | "html" | "sarif" | "slack" | "discord";
   from?: string;
   to?: string;
   ci?: {
@@ -15,6 +15,9 @@ export interface SherpaConfig {
   };
   baseline?: {
     file?: string;
+  };
+  remediation?: {
+    playbook?: Array<{ pattern: string; hint: string }>;
   };
 }
 
