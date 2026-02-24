@@ -9,6 +9,8 @@ export interface SherpaConfig {
   output?: "table" | "json" | "markdown" | "html" | "sarif" | "slack" | "discord";
   from?: string;
   to?: string;
+  includeLevels?: string[];
+  excludeLevels?: string[];
   ci?: {
     failOnLevel?: Record<string, number>;
     failOnPatterns?: string[];

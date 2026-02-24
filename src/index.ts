@@ -24,6 +24,8 @@ import { attachFingerprints } from "./utils/fingerprint";
 import { resolvePatternPacks } from "./patternPacks";
 import { runWatch } from "./watch";
 import { buildRemediationHints } from "./remediation";
+import { filterByLevels } from "./utils/levelFilter";
+import { splitCsv } from "./utils/csvList";
 
 interface AnalyzeOptions {
   json?: boolean;
@@ -49,11 +51,14 @@ interface AnalyzeOptions {
   sinceDeploy?: string;
   anomalyFactor?: string;
   anomalyMinDelta?: string;
+  includeLevel?: string[];
+  excludeLevel?: string[];
 }
 
 function collect(value: string, previous: string[]): string[] {
   return previous.concat([value]);
 }
+
 
 function parseAndProcessLogs(
   parsed: LaravelErrorLog[],
@@ -70,6 +75,11 @@ function parseAndProcessLogs(
     plugins.register(piiScrubberPlugin());
   }
   processed = plugins.runTransform(processed);
+
+  const includeLevels = splitCsv([...(config.includeLevels ?? []), ...(options.includeLevel ?? [])]);
+  const excludeLevels = splitCsv([...(config.excludeLevels ?? []), ...(options.excludeLevel ?? [])]);
+  processed = filterByLevels(processed, includeLevels, excludeLevels);
+
   processed = attachFingerprints(processed);
 
   const patternNames = [...(config.patternPacks ?? []), ...(options.patternPack ?? [])];
@@ -159,6 +169,8 @@ program
   .option("--format <format>", "Output format: table|json|markdown|html|sarif|slack|discord")
   .option("--from <isoDate>", "Include logs from this date/time (ISO-8601)")
   .option("--to <isoDate>", "Include logs up to this date/time (ISO-8601)")
+  .option("--include-level <level>", "Only include these levels (repeatable or CSV)", collect, [])
+  .option("--exclude-level <level>", "Exclude these levels (repeatable or CSV)", collect, [])
   .option("--suppress-noise", "Apply built-in noise suppression plugin")
   .option("--scrub-pii", "Apply PII scrubber plugin")
   .option("--tui", "Interactive terminal view")
