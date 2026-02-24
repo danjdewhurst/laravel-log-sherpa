@@ -26,6 +26,7 @@ import { runWatch } from "./watch";
 import { buildRemediationHints } from "./remediation";
 import { filterByLevels } from "./utils/levelFilter";
 import { splitCsv } from "./utils/csvList";
+import { filterByPattern } from "./utils/patternFilter";
 
 interface AnalyzeOptions {
   json?: boolean;
@@ -53,6 +54,7 @@ interface AnalyzeOptions {
   anomalyMinDelta?: string;
   includeLevel?: string[];
   excludeLevel?: string[];
+  messageMatch?: string;
   topMessages?: string;
   topFingerprints?: string;
   topContextValues?: string;
@@ -92,6 +94,7 @@ function parseAndProcessLogs(
   const includeLevels = splitCsv([...(config.includeLevels ?? []), ...(options.includeLevel ?? [])]);
   const excludeLevels = splitCsv([...(config.excludeLevels ?? []), ...(options.excludeLevel ?? [])]);
   processed = filterByLevels(processed, includeLevels, excludeLevels);
+  processed = filterByPattern(processed, options.messageMatch);
 
   processed = attachFingerprints(processed);
 
@@ -201,6 +204,7 @@ program
   .option("--to <isoDate>", "Include logs up to this date/time (ISO-8601)")
   .option("--include-level <level>", "Only include these levels (repeatable or CSV)", collect, [])
   .option("--exclude-level <level>", "Exclude these levels (repeatable or CSV)", collect, [])
+  .option("--message-match <regex>", "Only include logs where message/stack matches regex")
   .option("--top-messages <n>", "Limit number of top messages shown in summaries")
   .option("--top-fingerprints <n>", "Limit number of top fingerprints shown in summaries")
   .option("--top-context-values <n>", "Limit context hotspot values per category")
