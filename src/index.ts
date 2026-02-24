@@ -14,6 +14,7 @@ import { HtmlFormatter } from "./formatters/htmlFormatter";
 import { MarkdownFormatter } from "./formatters/markdownFormatter";
 import { formatSarif } from "./formatters/sarifFormatter";
 import { TableFormatter } from "./formatters/tableFormatter";
+import { formatDiscordDigest, formatSlackDigest } from "./formatters/chatDigestFormatter";
 import { parseLaravelLog } from "./parsers/laravelParser";
 import { noiseSuppressionPlugin } from "./plugins/noiseSuppressionPlugin";
 import { piiScrubberPlugin } from "./plugins/piiScrubberPlugin";
@@ -27,7 +28,7 @@ import { runWatch } from "./watch";
 
 interface AnalyzeOptions {
   json?: boolean;
-  format?: "table" | "json" | "markdown" | "html" | "sarif";
+  format?: "table" | "json" | "markdown" | "html" | "sarif" | "slack" | "discord";
   from?: string;
   to?: string;
   suppressNoise?: boolean;
@@ -122,6 +123,14 @@ async function outputResult(
     console.log(formatSarif(logs, summary));
     return;
   }
+  if (format === "slack") {
+    console.log(formatSlackDigest(logs, summary));
+    return;
+  }
+  if (format === "discord") {
+    console.log(formatDiscordDigest(logs, summary));
+    return;
+  }
   const baseOutput = new TableFormatter().format(logs, summary);
   if (!deployRegression) {
     console.log(baseOutput);
@@ -151,7 +160,7 @@ program
 program
   .argument("[file]", "Path to laravel.log")
   .option("--json", "Output JSON")
-  .option("--format <format>", "Output format: table|json|markdown|html|sarif")
+  .option("--format <format>", "Output format: table|json|markdown|html|sarif|slack|discord")
   .option("--from <isoDate>", "Include logs from this date/time (ISO-8601)")
   .option("--to <isoDate>", "Include logs up to this date/time (ISO-8601)")
   .option("--suppress-noise", "Apply built-in noise suppression plugin")
