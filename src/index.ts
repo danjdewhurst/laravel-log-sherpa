@@ -48,6 +48,8 @@ interface AnalyzeOptions {
   dir?: string;
   match?: string;
   sinceDeploy?: string;
+  anomalyFactor?: string;
+  anomalyMinDelta?: string;
 }
 
 function collect(value: string, previous: string[]): string[] {
@@ -172,6 +174,8 @@ program
   .option("--fail-on-pattern <regex>", "CI regex gate (repeatable)", collect, [])
   .option("--tail", "Watch mode with rolling summaries")
   .option("--tail-interval <ms>", "Watch mode refresh interval in ms", "2000")
+  .option("--anomaly-factor <n>", "Spike multiplier for watch-mode anomaly detection", "2")
+  .option("--anomaly-min-delta <n>", "Minimum total-count jump before anomaly warning", "5")
   .option("--pattern-pack <name>", "Pattern packs (database|auth|queue|cache)", collect, [])
   .option("--config <path>", "Path to log-sherpa config file")
   .option("--completion <shell>", "Print completion script for bash|zsh|fish")
@@ -223,6 +227,8 @@ program
           from: options.from ?? config.from,
           to: options.to ?? config.to,
           intervalMs: Number(options.tailInterval ?? "2000"),
+          anomalyFactor: Number(options.anomalyFactor ?? "2"),
+          anomalyMinDelta: Number(options.anomalyMinDelta ?? "5"),
         });
         return;
       }

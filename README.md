@@ -21,7 +21,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - CI policy gates (`--ci`, `--fail-on-level`, `--fail-on-pattern`) with non-zero exit code
 - Context enrichment (route/controller/job/request id extraction)
 - Pattern packs (`--pattern-pack database|auth|queue|cache`)
-- Watch mode (`--tail`, `--tail-interval`)
+- Watch mode (`--tail`, `--tail-interval`) with anomaly spike detection (`--anomaly-factor`, `--anomaly-min-delta`)
 - Multi-file incident window mode (`--dir /path/to/logs --match laravel`)
 - Baselines (`baseline create`, `baseline check`)
 - Config support (`log-sherpa.config.ts|js|json`)
@@ -60,7 +60,7 @@ bun run src/index.ts /path/to/storage/logs/laravel.log --pattern-pack database -
 
 # compare + watch
 bun run src/index.ts --compare old.log new.log
-bun run src/index.ts /path/to/storage/logs/laravel.log --tail --tail-interval 1500
+bun run src/index.ts /path/to/storage/logs/laravel.log --tail --tail-interval 1500 --anomaly-factor 2.5 --anomaly-min-delta 8
 
 # deploy-aware regression check
 bun run src/index.ts /path/to/storage/logs/laravel.log --since-deploy 2026-02-24T10:30:00Z
@@ -113,7 +113,7 @@ export default {
 - [x] Multi-file incident window mode (analyze rotated logs as one timeline)
 - [x] Deploy-aware regression detection (`--since-deploy`)
 - [x] Slack/Discord incident digest output formats
-- [ ] Anomaly detection for error-rate spikes in watch mode
+- [x] Anomaly detection for error-rate spikes in watch mode
 - [ ] Auto-remediation hints via configurable playbooks
 
 ## Testing
