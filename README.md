@@ -21,6 +21,7 @@ A fast, extensible CLI for parsing and summarizing Laravel error logs using **Ty
 - Context enrichment (route/controller/job/request id extraction)
 - Pattern packs (`--pattern-pack database|auth|queue|cache`)
 - Watch mode (`--tail`, `--tail-interval`)
+- Multi-file incident window mode (`--dir /path/to/logs --match laravel`)
 - Baselines (`baseline create`, `baseline check`)
 - Config support (`log-sherpa.config.ts|js|json`)
 - OpenTelemetry/Sentry export bridge (`--export-otel`, `--export-sentry`)
@@ -39,6 +40,9 @@ bun install
 ```bash
 # basic
 bun run src/index.ts /path/to/storage/logs/laravel.log
+
+# incident window across rotated logs
+bun run src/index.ts --dir /path/to/storage/logs --match laravel
 
 # structured output
 bun run src/index.ts /path/to/storage/logs/laravel.log --json
@@ -100,7 +104,7 @@ export default {
 - [x] Config file support (`log-sherpa.config.ts`)
 - [x] OpenTelemetry/Sentry export bridge
 - [x] CLI UX polish (shell completions, richer errors, fixture packs)
-- [ ] Multi-file incident window mode (analyze rotated logs as one timeline)
+- [x] Multi-file incident window mode (analyze rotated logs as one timeline)
 - [ ] Deploy-aware regression detection (`--since-deploy`)
 - [ ] Slack/Discord incident digest output formats
 - [ ] Anomaly detection for error-rate spikes in watch mode

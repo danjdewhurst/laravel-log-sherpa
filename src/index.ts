@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { summarize } from "./analyze";
 import { createBaseline, checkBaseline, loadBaseline, saveBaseline } from "./baseline";
 import { evaluateCiPolicy, parseLevelThresholds } from "./ciPolicy";
@@ -42,21 +43,35 @@ interface AnalyzeOptions {
   exportOtel?: string;
   exportSentry?: string;
   completion?: string;
+  dir?: string;
+  match?: string;
 }
 
 function collect(value: string, previous: string[]): string[] {
   return previous.concat([value]);
 }
 
-function parseAndProcess(
-  file: string,
+function parseLogFile(file: string): LaravelErrorLog[] {
+  const content = readFileSync(file, "utf8");
+  return parseLaravelLog(content);
+}
+
+function parseLogDirectory(dir: string, match = "laravel"): LaravelErrorLog[] {
+  const files = readdirSync(dir)
+    .filter((name) => name.toLowerCase().includes(match.toLowerCase()))
+    .map((name) => join(dir, name))
+    .filter((fullPath) => statSync(fullPath).isFile())
+    .sort();
+
+  return files.flatMap((file) => parseLogFile(file));
+}
+
+function parseAndProcessLogs(
+  parsed: LaravelErrorLog[],
   options: AnalyzeOptions,
   config: Awaited<ReturnType<typeof loadConfig>>,
 ): { logs: LaravelErrorLog[]; summary: ReturnType<typeof summarize> } {
-  const content = readFileSync(file, "utf8");
-  let processed = parseLaravelLog(content);
-
-  processed = filterByDateRange(processed, options.from ?? config.from, options.to ?? config.to);
+  let processed = filterByDateRange(parsed, options.from ?? config.from, options.to ?? config.to);
 
   const plugins = new PluginManager();
   if (options.suppressNoise || config.suppressNoise) {
@@ -133,6 +148,8 @@ program
   .option("--completion <shell>", "Print completion script for bash|zsh|fish")
   .option("--export-otel <file>", "Write OTel-compatible JSON payload")
   .option("--export-sentry <file>", "Write Sentry-compatible JSON payload")
+  .option("--dir <path>", "Analyze all log files in a directory")
+  .option("--match <substring>", "Filename match filter for --dir mode", "laravel")
   .action(async (file, options: AnalyzeOptions) => {
     try {
       if (options.completion) {
@@ -146,8 +163,8 @@ program
         if (options.compare.length !== 2) {
           throw new Error("--compare expects exactly two files: --compare old.log new.log");
         }
-        const oldData = parseAndProcess(options.compare[0], options, config);
-        const newData = parseAndProcess(options.compare[1], options, config);
+        const oldData = parseAndProcessLogs(parseLogFile(options.compare[0]), options, config);
+        const newData = parseAndProcessLogs(parseLogFile(options.compare[1]), options, config);
         const diff = compareLogs(oldData.logs, newData.logs);
         console.log(
           JSON.stringify(
@@ -167,8 +184,8 @@ program
         return;
       }
 
-      if (!file) {
-        throw new Error("A log file path is required unless using --compare or --completion.");
+      if (!file && !options.dir) {
+        throw new Error("A log file path is required unless using --dir, --compare, or --completion.");
       }
 
       if (options.tail) {
@@ -180,7 +197,8 @@ program
         return;
       }
 
-      const { logs, summary } = parseAndProcess(file, options, config);
+      const parsed = options.dir ? parseLogDirectory(options.dir, options.match) : parseLogFile(file);
+      const { logs, summary } = parseAndProcessLogs(parsed, options, config);
 
       if (options.exportOtel) exportOtel(logs, options.exportOtel);
       if (options.exportSentry) exportSentry(logs, options.exportSentry);
@@ -217,7 +235,7 @@ baseline
   .option("--out <path>", "Output baseline file", ".log-sherpa-baseline.json")
   .action(async (file, options) => {
     const config = await loadConfig();
-    const { logs } = parseAndProcess(file, {}, config);
+    const { logs } = parseAndProcessLogs(parseLogFile(file), {}, config);
     const snapshot = createBaseline(logs);
     saveBaseline(snapshot, options.out);
     console.log(`Baseline saved to ${options.out} (${snapshot.total} logs)`);
@@ -229,7 +247,7 @@ baseline
   .option("--baseline <path>", "Baseline file", ".log-sherpa-baseline.json")
   .action(async (file, options) => {
     const config = await loadConfig();
-    const { logs } = parseAndProcess(file, {}, config);
+    const { logs } = parseAndProcessLogs(parseLogFile(file), {}, config);
     const existing = await loadBaseline(options.baseline);
     const result = checkBaseline(existing, logs);
     console.log(JSON.stringify(result, null, 2));
